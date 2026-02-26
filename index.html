@@ -56,9 +56,9 @@ async function searchRoom() {
             const roomText = cols[0].replace("Phòng","").trim();
 
             if (roomText === room) {
-                const tienDien = parseInt(cols[3] || 0);
-                const tienNo = parseInt(cols[5] || 0);
-                const tongTien = parseInt(cols[7] || 0);
+                const tienDien = parseInt(cols[5] || 0);
+                const tienNo = parseInt(cols[7] || 0);
+                const tongTien = parseInt(cols[9] || 0);
 
                 const qrLink = "https://img.vietqr.io/image/tpb-01000792902-compact2.png?amount="
                     + tongTien + "&addInfo=" + room + "_ck&accountName=VU%20VI%20THOAN";
