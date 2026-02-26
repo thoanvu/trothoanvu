@@ -1,49 +1,86 @@
 
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Thanh toán Khu 2</title>
 <style>
-body { font-family: Arial; text-align: center; padding: 40px; }
-input { padding: 8px; font-size: 16px; }
-button { padding: 8px 15px; font-size: 16px; cursor: pointer; }
-#result { margin-top: 30px; }
-img { margin-top: 15px; }
+body { font-family: Arial; background:#f4f6f9; text-align:center; padding:30px; }
+.box { background:white; max-width:420px; margin:auto; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+input { padding:10px; font-size:16px; width:60%; }
+button { padding:10px 15px; font-size:16px; cursor:pointer; }
+.result { margin-top:20px; }
+.amount { font-weight:bold; color:#e74c3c; }
+img { margin-top:15px; }
 </style>
 </head>
 <body>
 
+<div class="box">
 <h2>Thanh toán tiền phòng - Khu 2</h2>
 
 <p>Nhập số phòng:</p>
 <input type="text" id="roomInput" placeholder="Ví dụ: 101">
-<button onclick="generateQR()">Xem QR</button>
+<button onclick="searchRoom()">Xem thông tin</button>
 
-<div id="result"></div>
+<div id="result" class="result"></div>
+</div>
 
 <script>
-const data = {
-    "101": 1228000
-};
+const csvUrl = "https://docs.google.com/spreadsheets/d/1fiuLoEWcq_JRBZNl0LJEUTO4Z2rpfrkf/export?format=csv&gid=1218312138";
 
-function generateQR() {
+async function searchRoom() {
     const room = document.getElementById("roomInput").value.trim();
     const resultDiv = document.getElementById("result");
-    resultDiv.innerHTML = "";
+    resultDiv.innerHTML = "Đang tải dữ liệu...";
 
-    if (data[room]) {
-        const amount = data[room];
-        const content = "K2_" + room + "_T02_2026";
-        const qrLink = "https://img.vietqr.io/image/tpb-01000792902-compact2.png?amount="
-            + amount + "&addInfo=" + content + "&accountName=VU%20VI%20THOAN";
+    try {
+        const response = await fetch(csvUrl);
+        const text = await response.text();
+        const rows = text.split("\n").map(r => r.split(","));
 
-        resultDiv.innerHTML =
-            "<h3>Phòng " + room + "</h3>" +
-            "<p>Tổng tiền: <b>" + amount.toLocaleString() + " đ</b></p>" +
-            "<img src='" + qrLink + "' width='300'>";
-    } else {
-        resultDiv.innerHTML = "<p style='color:red'>Không tìm thấy phòng.</p>";
+        // Giả định:
+        // Cột A = Phòng
+        // Cột tiền điện = cột D (index 3)
+        // Cột tiền nợ = cột F (index 5)
+        // Cột tổng tiền = cột H (index 7)
+
+        let found = false;
+
+        for (let i = 3; i < rows.length; i++) { // bắt đầu từ dòng dữ liệu
+            const cols = rows[i];
+            if (!cols[0]) continue;
+
+            const roomText = cols[0].replace("Phòng","").trim();
+
+            if (roomText === room) {
+                const tienDien = parseInt(cols[3] || 0);
+                const tienNo = parseInt(cols[5] || 0);
+                const tongTien = parseInt(cols[7] || 0);
+
+                const qrLink = "https://img.vietqr.io/image/tpb-01000792902-compact2.png?amount="
+                    + tongTien + "&addInfo=" + room + "_ck&accountName=VU%20VI%20THOAN";
+
+                resultDiv.innerHTML = `
+                    <p>Phòng <b>${room}</b></p>
+                    <p>Tiền điện: <span class="amount">${tienDien.toLocaleString()} đ</span></p>
+                    <p>Tiền nợ: <span class="amount">${tienNo.toLocaleString()} đ</span></p>
+                    <p>Tổng tiền: <span class="amount">${tongTien.toLocaleString()} đ</span></p>
+                    <img src="${qrLink}" width="260">
+                `;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            resultDiv.innerHTML = "<p style='color:red'>Không tìm thấy phòng.</p>";
+        }
+
+    } catch (err) {
+        resultDiv.innerHTML = "<p style='color:red'>Không tải được dữ liệu. Hãy đảm bảo Google Sheet đang để chế độ 'Anyone with link can view'.</p>";
     }
 }
 </script>
