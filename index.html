@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Thanh toán Khu 2</title>
+<style>
+body { font-family: Arial; text-align: center; padding: 40px; }
+input { padding: 8px; font-size: 16px; }
+button { padding: 8px 15px; font-size: 16px; cursor: pointer; }
+#result { margin-top: 30px; }
+img { margin-top: 15px; }
+</style>
+</head>
+<body>
+
+<h2>Thanh toán tiền phòng - Khu 2</h2>
+
+<p>Nhập số phòng:</p>
+<input type="text" id="roomInput" placeholder="Ví dụ: 101">
+<button onclick="generateQR()">Xem QR</button>
+
+<div id="result"></div>
+
+<script>
+const data = {
+    "101": 1228000
+};
+
+function generateQR() {
+    const room = document.getElementById("roomInput").value.trim();
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "";
+
+    if (data[room]) {
+        const amount = data[room];
+        const content = "K2_" + room + "_T02_2026";
+        const qrLink = "https://img.vietqr.io/image/tpb-01000792902-compact2.png?amount="
+            + amount + "&addInfo=" + content + "&accountName=VU%20VI%20THOAN";
+
+        resultDiv.innerHTML =
+            "<h3>Phòng " + room + "</h3>" +
+            "<p>Tổng tiền: <b>" + amount.toLocaleString() + " đ</b></p>" +
+            "<img src='" + qrLink + "' width='300'>";
+    } else {
+        resultDiv.innerHTML = "<p style='color:red'>Không tìm thấy phòng.</p>";
+    }
+}
+</script>
+
+</body>
+</html>
